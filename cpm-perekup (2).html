@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CPM PEREKUP — Покупка, продажа и обмен авто в Car Parking Multiplayer</title>
+<meta name="description" content="CPM PEREKUP — площадка для покупки, продажи и обмена автомобилей и аккаунтов в Car Parking Multiplayer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --bg-soft:#111114;
+    --panel:#17171b;
+    --panel-2:#1c1c21;
+    --line:#28282e;
+    --red:#e31c2f;
+    --red-deep:#8c0f1e;
+    --red-glow:rgba(227,28,47,.35);
+    --white:#f3f2ef;
+    --grey:#8d8d94;
+    --grey-dim:#5c5c62;
+    --radius-s:6px;
+    --radius-m:12px;
+    --ease:cubic-bezier(.16,.84,.44,1);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Manrope',sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{
+    font-family:'Rajdhani',sans-serif;
+    font-weight:700;
+    letter-spacing:.2px;
+    line-height:1.08;
+  }
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  ul{list-style:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  @media(prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
+  }
+
+  ::selection{background:var(--red); color:#fff;}
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--red);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  /* ---------- background texture ---------- */
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:2;
+    opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- nav ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    background:rgba(10,10,12,.7);
+    backdrop-filter:blur(14px) saturate(140%);
+    border-bottom:1px solid transparent;
+    transition:border-color .3s var(--ease), background .3s var(--ease);
+  }
+  header.scrolled{border-bottom-color:var(--line); background:rgba(10,10,12,.92);}
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    height:76px;
+  }
+  .logo{
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:22px;
+    display:flex; align-items:baseline; gap:6px;
+  }
+  .logo .accent{color:var(--red);}
+  .nav-links{display:flex; gap:36px; align-items:center;}
+  .nav-links a{
+    font-size:14.5px; color:var(--grey); font-weight:500;
+    position:relative; padding:4px 0; transition:color .25s;
+  }
+  .nav-links a::after{
+    content:''; position:absolute; left:0; bottom:0; width:0; height:1px;
+    background:var(--red); transition:width .3s var(--ease);
+  }
+  .nav-links a:hover{color:var(--white);}
+  .nav-links a:hover::after{width:100%;}
+  .nav-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--red); color:#fff; padding:10px 20px;
+    border-radius:var(--radius-s); font-weight:600; font-size:14px;
+    box-shadow:0 0 0 0 var(--red-glow); transition:box-shadow .3s, transform .2s, background .3s;
+  }
+  .nav-cta:hover{background:#ff2c40; box-shadow:0 6px 24px var(--red-glow); transform:translateY(-1px);}
+  .burger{display:none; width:26px; height:20px; position:relative;}
+  .burger span{position:absolute; left:0; right:0; height:2px; background:var(--white); transition:.3s;}
+  .burger span:nth-child(1){top:0;}
+  .burger span:nth-child(2){top:9px;}
+  .burger span:nth-child(3){top:18px;}
+  .burger.open span:nth-child(1){transform:translateY(9px) rotate(45deg);}
+  .burger.open span:nth-child(2){opacity:0;}
+  .burger.open span:nth-child(3){transform:translateY(-9px) rotate(-45deg);}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex; align-items:center;
+    padding-top:76px;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero-bg{
+    position:absolute; inset:0; z-index:-2;
+    background:
+      radial-gradient(ellipse 60% 55% at 78% 32%, rgba(227,28,47,.20), transparent 60%),
+      radial-gradient(ellipse 45% 45% at 10% 85%, rgba(227,28,47,.10), transparent 65%),
+      linear-gradient(180deg, #0a0a0c 0%, #0d0d10 60%, #0a0a0c 100%);
+  }
+  .hero-grid{
+    position:absolute; inset:0; z-index:-1;
+    background-image:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:linear-gradient(180deg, transparent, rgba(0,0,0,.9) 30%, rgba(0,0,0,.9) 75%, transparent);
+            mask-image:linear-gradient(180deg, transparent, rgba(0,0,0,.9) 30%, rgba(0,0,0,.9) 75%, transparent);
+  }
+  .hero-stripe{
+    position:absolute; right:-10%; top:0; bottom:0; width:60%; z-index:-1;
+    background:linear-gradient(115deg, transparent 42%, rgba(227,28,47,.14) 43%, rgba(227,28,47,.14) 45%, transparent 46%,
+                                transparent 52%, rgba(227,28,47,.07) 53%, rgba(227,28,47,.07) 54.5%, transparent 55.5%);
+  }
+  .hero-content{
+    display:grid; grid-template-columns:1.15fr .85fr; gap:40px; align-items:center;
+    width:100%;
+  }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:13.5px; color:var(--grey); font-weight:600;
+    margin-bottom:22px;
+  }
+  .hero-eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 10px var(--red);}
+  .hero h1{
+    font-size:clamp(48px, 6.4vw, 92px);
+    color:#fff;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .hero h1 span{
+    display:block; color:var(--red);
+    text-shadow:0 0 40px var(--red-glow);
+  }
+  .hero .tagline{
+    margin-top:22px; font-size:19px; color:#c8c8cc; font-weight:600;
+    max-width:480px;
+  }
+  .hero .desc{
+    margin-top:14px; font-size:16px; color:var(--grey); max-width:460px;
+  }
+  .hero-actions{display:flex; gap:16px; margin-top:38px; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:15px 28px; border-radius:var(--radius-s);
+    font-weight:700; font-size:15.5px; font-family:'Rajdhani',sans-serif; letter-spacing:.3px;
+    transition:transform .25s var(--ease), box-shadow .3s var(--ease), background .3s, border-color .3s;
+  }
+  .btn-primary{
+    background:var(--red); color:#fff;
+    box-shadow:0 8px 30px -8px var(--red-glow);
+  }
+  .btn-primary:hover{background:#ff2c40; transform:translateY(-2px); box-shadow:0 14px 34px -8px var(--red-glow);}
+  .btn-ghost{
+    border:1px solid var(--line); color:var(--white); background:rgba(255,255,255,.02);
+  }
+  .btn-ghost:hover{border-color:var(--grey-dim); background:rgba(255,255,255,.05); transform:translateY(-2px);}
+
+  .hero-stats{
+    display:flex; gap:32px; margin-top:56px; padding-top:28px; border-top:1px solid var(--line);
+    max-width:460px;
+  }
+  .stat b{font-family:'Rajdhani',sans-serif; font-size:30px; color:#fff; font-weight:700; display:block;}
+  .stat span{font-size:13px; color:var(--grey);}
+
+  /* hero visual: abstract car silhouette panel */
+  .hero-visual{
+    position:relative; height:520px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hero-visual .glow{
+    position:absolute; width:340px; height:340px; border-radius:50%;
+    background:radial-gradient(circle, var(--red-glow), transparent 70%);
+    filter:blur(10px); opacity:.8;
+  }
+  .hero-visual svg{position:relative; width:100%; max-width:560px;}
+  .hero-car-photo{
+    position:relative; width:100%; max-width:520px; border-radius:18px;
+    object-fit:cover; aspect-ratio:4/3;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+    -webkit-mask-image:radial-gradient(ellipse 85% 85% at 50% 50%, #000 60%, transparent 100%);
+            mask-image:radial-gradient(ellipse 85% 85% at 50% 50%, #000 60%, transparent 100%);
+  }
+  .hero-visual .ring{
+    position:absolute; border:1px solid rgba(255,255,255,.06); border-radius:50%;
+  }
+  .ring-1{width:420px; height:420px;}
+  .ring-2{width:340px; height:340px; border-color:rgba(227,28,47,.18);}
+
+  .scroll-cue{
+    position:absolute; bottom:36px; left:32px; display:flex; align-items:center; gap:10px;
+    color:var(--grey-dim); font-size:12.5px; letter-spacing:.5px;
+  }
+  .scroll-cue .line{width:1px; height:34px; background:linear-gradient(180deg, var(--grey-dim), transparent); position:relative; overflow:hidden;}
+  .scroll-cue .line::after{content:''; position:absolute; top:-100%; left:0; width:100%; height:100%; background:var(--red); animation:scrollline 2.2s ease-in-out infinite;}
+  @keyframes scrollline{ 0%{top:-100%;} 60%{top:100%;} 100%{top:100%;} }
+
+  /* ---------- section shared ---------- */
+  section{position:relative; padding:120px 0;}
+  .section-tight{padding:90px 0;}
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:24px;
+    margin-bottom:56px; flex-wrap:wrap;
+  }
+  .section-head h2{
+    font-size:clamp(32px, 4vw, 46px); color:#fff; text-transform:uppercase;
+  }
+  .section-head p{color:var(--grey); max-width:380px; font-size:15.5px;}
+  .section-num{
+    font-family:'Rajdhani',sans-serif; color:var(--red); font-weight:700; font-size:14px;
+    letter-spacing:2px; margin-bottom:14px; display:block;
+  }
+
+  .reveal{opacity:0; transform:translateY(28px); transition:opacity .7s var(--ease), transform .7s var(--ease);}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  .reveal-stagger .reveal:nth-child(1){transition-delay:0s;}
+  .reveal-stagger .reveal:nth-child(2){transition-delay:.08s;}
+  .reveal-stagger .reveal:nth-child(3){transition-delay:.16s;}
+  .reveal-stagger .reveal:nth-child(4){transition-delay:.24s;}
+  .reveal-stagger .reveal:nth-child(5){transition-delay:.32s;}
+
+  /* ---------- about ---------- */
+  .about-grid{display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:start;}
+  .about-text p{color:var(--grey); font-size:16.5px; max-width:480px; margin-bottom:16px;}
+  .about-text p:first-child{color:#d3d3d6; font-size:18px; font-weight:500;}
+
+  .feature-cards{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border-radius:var(--radius-m); overflow:hidden; border:1px solid var(--line);}
+  .feature-card{
+    background:var(--panel); padding:30px 26px;
+    transition:background .3s;
+  }
+  .feature-card:hover{background:var(--panel-2);}
+  .feature-card .ico{font-size:26px; margin-bottom:16px; display:block;}
+  .feature-card h3{font-size:18px; color:#fff; margin-bottom:8px; text-transform:none; font-weight:700;}
+  .feature-card p{color:var(--grey); font-size:14.5px;}
+
+  /* ---------- why us ---------- */
+  .why-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px;}
+  .why-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-m);
+    padding:28px 24px; transition:border-color .3s, transform .3s var(--ease), background .3s;
+    position:relative; overflow:hidden;
+  }
+  .why-card::before{
+    content:''; position:absolute; top:0; left:0; width:100%; height:2px;
+    background:linear-gradient(90deg, var(--red), transparent);
+    transform:scaleX(0); transform-origin:left; transition:transform .4s var(--ease);
+  }
+  .why-card:hover{border-color:rgba(227,28,47,.4); transform:translateY(-4px); background:var(--panel-2);}
+  .why-card:hover::before{transform:scaleX(1);}
+  .why-card h3{font-size:18.5px; color:#fff; margin-bottom:10px; font-weight:700;}
+  .why-card p{color:var(--grey); font-size:14.5px;}
+  .why-card .n{
+    font-family:'Rajdhani',sans-serif; color:var(--grey-dim); font-size:13px; font-weight:600; letter-spacing:1px;
+    margin-bottom:14px; display:block;
+  }
+
+  /* ---------- cars ---------- */
+  .cars-section{background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .cars-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px;}
+  .car-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-m);
+    overflow:hidden; transition:transform .35s var(--ease), border-color .35s, box-shadow .35s;
+  }
+  .car-card:hover{transform:translateY(-6px); border-color:rgba(227,28,47,.35); box-shadow:0 20px 40px -18px rgba(0,0,0,.6);}
+  .car-media{
+    height:190px; position:relative;
+    background:#131316;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .car-media img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:saturate(1.05) contrast(1.04);
+    transition:transform .5s var(--ease);
+  }
+  .car-card:hover .car-media img{transform:scale(1.06);}
+  .car-media::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(10,10,12,0) 45%, rgba(10,10,12,.75) 100%);
+    pointer-events:none;
+  }
+  .car-tag{
+    position:absolute; top:12px; left:12px; z-index:2;
+    background:rgba(20,8,10,.55); border:1px solid rgba(227,28,47,.5);
+    backdrop-filter:blur(4px);
+    color:#ff6270; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:20px; letter-spacing:.3px;
+    font-family:'Rajdhani',sans-serif;
+  }
+  .car-body{padding:20px 22px 22px;}
+  .car-body h3{font-size:19px; color:#fff; margin-bottom:4px; font-weight:700;}
+  .car-meta{display:flex; gap:14px; color:var(--grey); font-size:13px; margin-bottom:16px;}
+  .car-meta span{display:flex; align-items:center; gap:5px;}
+  .car-foot{display:flex; align-items:center; justify-content:space-between; padding-top:14px; border-top:1px solid var(--line);}
+  .car-price{font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:#fff;}
+  .car-price small{color:var(--grey-dim); font-size:12px; font-weight:600; display:block; margin-top:1px;}
+  .car-link{font-size:13px; color:var(--red); font-weight:600; transition:gap .25s; display:flex; align-items:center; gap:4px;}
+  .car-link:hover{gap:8px;}
+
+  /* ---------- how it works ---------- */
+  .steps{display:grid; grid-template-columns:repeat(3, 1fr); gap:0; position:relative;}
+  .steps::before{
+    content:''; position:absolute; top:34px; left:8%; right:8%; height:1px;
+    background:linear-gradient(90deg, transparent, var(--line) 15%, var(--line) 85%, transparent);
+    z-index:0;
+  }
+  .step{position:relative; padding:0 24px; text-align:left;}
+  .step-num{
+    width:68px; height:68px; border-radius:50%; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:26px; color:var(--red);
+    margin-bottom:24px; position:relative; z-index:1; transition:border-color .3s, box-shadow .3s;
+  }
+  .step:hover .step-num{border-color:var(--red); box-shadow:0 0 24px -6px var(--red-glow);}
+  .step h3{font-size:20px; color:#fff; margin-bottom:10px; font-weight:700;}
+  .step p{color:var(--grey); font-size:14.5px; max-width:280px;}
+
+  /* ---------- telegram cta block ---------- */
+  .tg-section{padding:110px 0;}
+  .tg-panel{
+    position:relative; border-radius:20px; overflow:hidden;
+    background:
+      radial-gradient(ellipse 70% 100% at 85% 0%, rgba(227,28,47,.28), transparent 60%),
+      linear-gradient(135deg, #17171b, #0f0f12 70%);
+    border:1px solid var(--line);
+    padding:64px 60px;
+    display:grid; grid-template-columns:1.3fr 1fr; gap:40px; align-items:center;
+  }
+  .tg-panel h2{font-size:clamp(28px, 3.6vw, 42px); color:#fff; text-transform:uppercase; margin-bottom:16px;}
+  .tg-panel p{color:#c3c3c8; font-size:16px; max-width:440px;}
+  .tg-main-cta{margin-top:30px;}
+  .tg-side{
+    background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--radius-m);
+    padding:28px; backdrop-filter:blur(6px);
+  }
+  .tg-side .label{font-size:13px; color:var(--grey); margin-bottom:6px;}
+  .tg-side .handle{
+    font-family:'Rajdhani',sans-serif; font-size:24px; font-weight:700; color:#fff; margin-bottom:20px;
+  }
+  .tg-side .handle .at{color:var(--red);}
+  .tg-side .btn{width:100%; justify-content:center;}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line); padding:52px 0 40px; background:var(--bg-soft);}
+  .footer-top{display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap; padding-bottom:36px; border-bottom:1px solid var(--line); margin-bottom:28px;}
+  .footer-brand .logo{margin-bottom:10px;}
+  .footer-brand p{color:var(--grey); font-size:14px; max-width:300px;}
+  .footer-links{display:flex; gap:56px;}
+  .footer-col h4{font-size:13px; color:var(--grey-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; font-weight:600; font-family:'Manrope',sans-serif;}
+  .footer-col a{display:block; color:var(--grey); font-size:14.5px; margin-bottom:11px; transition:color .25s;}
+  .footer-col a:hover{color:var(--white);}
+  .footer-bottom{display:flex; justify-content:space-between; color:var(--grey-dim); font-size:13px; flex-wrap:wrap; gap:10px;}
+
+  /* ---------- fixed mobile telegram button ---------- */
+  .fixed-tg{
+    position:fixed; bottom:20px; left:50%; transform:translate(-50%, 90px);
+    z-index:60; display:none; align-items:center; gap:10px;
+    background:var(--red); color:#fff; padding:14px 24px; border-radius:40px;
+    font-weight:700; font-family:'Rajdhani',sans-serif; font-size:15.5px;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+    transition:transform .4s var(--ease);
+  }
+  .fixed-tg.show{transform:translate(-50%, 0);}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:980px){
+    .hero-content{grid-template-columns:1fr;}
+    .hero-visual{height:340px; order:-1;}
+    .about-grid{grid-template-columns:1fr; gap:40px;}
+    .feature-cards{grid-template-columns:1fr;}
+    .why-grid{grid-template-columns:1fr 1fr;}
+    .cars-grid{grid-template-columns:1fr 1fr;}
+    .steps{grid-template-columns:1fr; gap:44px;}
+    .steps::before{display:none;}
+    .tg-panel{grid-template-columns:1fr; padding:44px 32px;}
+  }
+  @media(max-width:720px){
+    .wrap{padding:0 20px;}
+    .nav-links{display:none;}
+    .burger{display:block;}
+    .nav-cta{display:none;}
+    .hero h1{font-size:clamp(38px,11vw,54px);}
+    .hero-stats{flex-wrap:wrap; gap:24px;}
+    .why-grid{grid-template-columns:1fr;}
+    .cars-grid{grid-template-columns:1fr;}
+    .section-head{flex-direction:column; align-items:flex-start;}
+    .fixed-tg{display:inline-flex;}
+    section{padding:80px 0;}
+    .footer-links{gap:32px; flex-wrap:wrap;}
+    .footer-top{flex-direction:column;}
+  }
+
+  /* mobile nav drawer */
+  .mobile-nav{
+    position:fixed; inset:76px 0 0 0; z-index:45; background:rgba(9,9,11,.98);
+    backdrop-filter:blur(10px);
+    display:flex; flex-direction:column; padding:36px 28px; gap:26px;
+    transform:translateX(100%); transition:transform .4s var(--ease);
+  }
+  .mobile-nav.open{transform:translateX(0);}
+  .mobile-nav a{font-size:22px; font-family:'Rajdhani',sans-serif; font-weight:600; color:#fff;}
+  .mobile-nav .btn{margin-top:12px; align-self:flex-start;}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header id="header">
+  <div class="wrap">
+    <nav>
+      <a href="#" class="logo">CPM<span class="accent">·</span>PEREKUP</a>
+      <div class="nav-links">
+        <a href="#about">О нас</a>
+        <a href="#why">Почему мы</a>
+        <a href="#cars">Автомобили</a>
+        <a href="#how">Как это работает</a>
+        <a href="#telegram">Telegram</a>
+      </div>
+      <a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="nav-cta">Telegram-канал</a>
+      <button class="burger" id="burger" aria-label="Открыть меню"><span></span><span></span><span></span></button>
+    </nav>
+  </div>
+</header>
+
+<div class="mobile-nav" id="mobileNav">
+  <a href="#about">О нас</a>
+  <a href="#why">Почему мы</a>
+  <a href="#cars">Автомобили</a>
+  <a href="#how">Как это работает</a>
+  <a href="#telegram">Telegram</a>
+  <a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="btn btn-primary">Перейти в Telegram</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-stripe"></div>
+  <div class="wrap">
+    <div class="hero-content">
+      <div>
+        <div class="hero-eyebrow"><span class="dot"></span> Car Parking Multiplayer · Сообщество трейдеров</div>
+        <h1>CPM<span>PEREKUP</span></h1>
+        <p class="tagline">Покупка · Продажа · Обмен автомобилей в Car Parking Multiplayer</p>
+        <p class="desc">Найди свой идеальный автомобиль или выгодно продай свой. Быстро, удобно и надёжно — без лишних посредников и долгих переписок.</p>
+        <div class="hero-actions">
+          <a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="btn btn-primary">Перейти в Telegram</a>
+          <a href="https://t.me/ReaSa621" target="_blank" rel="noopener" class="btn btn-ghost">Связаться с менеджером</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><b>1200+</b><span>сделок закрыто</span></div>
+          <div class="stat"><b>100+</b><span>авто в наличии</span></div>
+          <div class="stat"><b>&lt;1 часа</b><span>среднее ожидание</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="glow"></div>
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <img class="hero-car-photo" src="https://commons.wikimedia.org/wiki/Special:FilePath/Lamborghini%20Huracan%20Evo%20IMG%203679.jpg?width=900" alt="Lamborghini Huracan">
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><div class="line"></div> Листай вниз</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <span class="section-num">О ПЛОЩАДКЕ</span>
+        <h2 style="text-transform:uppercase; color:#fff; font-size:clamp(28px,3.6vw,40px); margin-bottom:22px;">Что такое CPM PEREKUP</h2>
+        <p>CPM PEREKUP — это площадка и сообщество для игроков Car Parking Multiplayer, где можно найти нужный автомобиль, выгодное предложение и оперативно связаться с менеджером.</p>
+        <p>Мы собираем актуальные объявления, проверяем сделки и помогаем игрокам обмениваться автомобилями и аккаунтами без риска остаться ни с чем.</p>
+      </div>
+      <div class="feature-cards reveal-stagger">
+        <div class="feature-card reveal"><span class="ico">🚗</span><h3>Автомобили</h3><p>Большой выбор прокачанных машин под любой уровень и бюджет.</p></div>
+        <div class="feature-card reveal"><span class="ico">💰</span><h3>Выгодные сделки</h3><p>Актуальные цены и честный обмен без переплат.</p></div>
+        <div class="feature-card reveal"><span class="ico">⚡</span><h3>Быстрая связь</h3><p>Менеджер на связи в Telegram — ответ в течение часа.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="section-num">ПРЕИМУЩЕСТВА</span>
+        <h2>Почему выбирают нас</h2>
+      </div>
+      <p>Мы работаем каждый день, чтобы сделка проходила быстро и без нервов — от первого сообщения до передачи авто.</p>
+    </div>
+    <div class="why-grid reveal-stagger">
+      <div class="why-card reveal"><span class="n">01</span><h3>Быстрые ответы</h3><p>Менеджер отвечает в Telegram не позднее чем за час — не нужно ждать сутками.</p></div>
+      <div class="why-card reveal"><span class="n">02</span><h3>Большой выбор</h3><p>Сотни автомобилей разных классов: от гражданских до топовых спорткаров.</p></div>
+      <div class="why-card reveal"><span class="n">03</span><h3>Удобная связь через Telegram</h3><p>Никаких сторонних приложений — вся коммуникация в одном привычном мессенджере.</p></div>
+      <div class="why-card reveal"><span class="n">04</span><h3>Актуальные предложения</h3><p>Каталог обновляется регулярно, старые и неактуальные объявления убираются.</p></div>
+      <div class="why-card reveal"><span class="n">05</span><h3>Красивое оформление</h3><p>Каждое объявление содержит фото, характеристики и честную цену.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CARS -->
+<section id="cars" class="cars-section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="section-num">КАТАЛОГ</span>
+        <h2>Демонстрационные автомобили</h2>
+      </div>
+      <p>Несколько примеров из каталога — актуальный список смотри в Telegram-канале.</p>
+    </div>
+    <div class="cars-grid reveal-stagger" id="carsGrid"></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="section-num">ПРОЦЕСС</span>
+        <h2>Как это работает</h2>
+      </div>
+      <p>Три простых шага — от выбора машины до готовой сделки.</p>
+    </div>
+    <div class="steps reveal-stagger">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h3>Выбираешь автомобиль</h3>
+        <p>Смотришь каталог в Telegram-канале и находишь машину, которая подходит по цене и характеристикам.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">2</div>
+        <h3>Пишешь менеджеру</h3>
+        <p>Уточняешь детали, состояние авто и условия сделки напрямую в личных сообщениях.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">3</div>
+        <h3>Договариваешься о сделке</h3>
+        <p>Согласовываешь способ обмена и получаешь свой новый автомобиль в CPM.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TELEGRAM -->
+<section id="telegram" class="tg-section">
+  <div class="wrap">
+    <div class="tg-panel reveal">
+      <div>
+        <h2>Наш Telegram-канал</h2>
+        <p>Следи за новыми автомобилями, предложениями и обновлениями CPM PEREKUP.</p>
+        <a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="btn btn-primary tg-main-cta">Открыть канал →</a>
+      </div>
+      <div class="tg-side">
+        <div class="label">Менеджер</div>
+        <div class="handle"><span class="at">@</span>ReaSa621</div>
+        <a href="https://t.me/ReaSa621" target="_blank" rel="noopener" class="btn btn-primary">Написать менеджеру →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">CPM<span class="accent" style="color:var(--red);">·</span>PEREKUP</div>
+        <p>Car Parking Multiplayer · Покупка · Продажа · Обмен</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Разделы</h4>
+          <a href="#about">О нас</a>
+          <a href="#why">Почему мы</a>
+          <a href="#cars">Автомобили</a>
+          <a href="#how">Как это работает</a>
+        </div>
+        <div class="footer-col">
+          <h4>Контакты</h4>
+          <a href="https://t.me/CPMperekup" target="_blank" rel="noopener">Telegram-канал</a>
+          <a href="https://t.me/ReaSa621" target="_blank" rel="noopener">Менеджер</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>CPM PEREKUP © 2026</span>
+      <span>Car Parking Multiplayer · Покупка · Продажа · Обмен</span>
+    </div>
+  </div>
+</footer>
+
+<a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="fixed-tg" id="fixedTg">Telegram-канал</a>
+
+<script>
+  // header scroll state
+  const header = document.getElementById('header');
+  const fixedTg = document.getElementById('fixedTg');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+    fixedTg.classList.toggle('show', window.scrollY > 480);
+  });
+
+  // mobile nav
+  const burger = document.getElementById('burger');
+  const mobileNav = document.getElementById('mobileNav');
+  burger.addEventListener('click', () => {
+    burger.classList.toggle('open');
+    mobileNav.classList.toggle('open');
+  });
+  mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    burger.classList.remove('open');
+    mobileNav.classList.remove('open');
+  }));
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+  revealEls.forEach(el => io.observe(el));
+
+  // demo car catalog — rendered so cards stay consistent and easy to edit
+  const wm = (file) => `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=600`;
+
+  const cars = [
+    { name: 'ВАЗ-2114 Street', tag: 'Бюджет', power: '90 л.с.', top: '175 км/ч', price: '20 000', unit: 'сум', img: wm('VAZ-2114 Samara (Saint Petersburg, Russia).jpg') },
+    { name: 'BMW M5 E60', tag: 'Спорт', power: '520 л.с.', top: '312 км/ч', price: '35 000', unit: 'сум', img: wm('2005 BMW M5 E60 Black SP22.jpg') },
+    { name: 'Nissan GT-R R34', tag: 'Хит продаж', power: '480 л.с.', top: '328 км/ч', price: '48 000', unit: 'сум', img: wm('Nissan Skyline GT-R R34 V Spec II.jpg') },
+    { name: 'Mercedes-Benz G63', tag: 'Люкс', power: '585 л.с.', top: '280 км/ч', price: '50 000', unit: 'сум', img: wm('Mercedes-AMG G63 (W464) front.jpg') },
+    { name: 'Audi RS6 Avant', tag: 'Универсал', power: '600 л.с.', top: '305 км/ч', price: '42 000', unit: 'сум', img: wm('Audi RS6 Avant C8 IMG 5682.jpg') },
+    { name: 'Lamborghini Huracan', tag: 'Топ', power: '640 л.с.', top: '340 км/ч', price: '50 000', unit: 'сум', img: wm('Lamborghini Huracan Evo IMG 3679.jpg') },
+    { name: 'Dodge Challenger SRT', tag: 'Маслкар', power: '710 л.с.', top: '325 км/ч', price: '45 000', unit: 'сум', img: wm('White Dodge Challenger SRT front view.jpg') },
+  ];
+
+  const grid = document.getElementById('carsGrid');
+  grid.innerHTML = cars.map(c => `
+    <div class="car-card reveal">
+      <div class="car-media">
+        <span class="car-tag">${c.tag}</span>
+        <img src="${c.img}" alt="${c.name}" loading="lazy">
+      </div>
+      <div class="car-body">
+        <h3>${c.name}</h3>
+        <div class="car-meta">
+          <span>⚙ ${c.power}</span>
+          <span>⚡ ${c.top}</span>
+        </div>
+        <div class="car-foot">
+          <div class="car-price">${c.price}<small>${c.unit}</small></div>
+          <a href="https://t.me/CPMperekup" target="_blank" rel="noopener" class="car-link">Узнать больше →</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
